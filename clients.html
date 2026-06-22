@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients Directory | TenderX Solutions</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* Drawer and Extra Styles for Premium UI */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 650px;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(25px);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2100;
+            overflow-y: auto;
+            padding: var(--sp-lg);
+        }
+        .drawer-overlay.active {
+            right: 0;
+        }
+        .drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            z-index: 2050;
+        }
+        .drawer-backdrop.active {
+            display: block;
+        }
+        .timeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            padding: 12px 18px;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+        .timeline-item:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-badge.filed {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-badge.pending {
+            background: rgba(244, 63, 94, 0.15);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+        .status-badge.due {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .credential-box {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            padding: 2px 8px;
+            width: 100%;
+        }
+        .credential-box input {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            flex: 1;
+            color: white;
+            font-family: monospace;
+            font-size: 1rem;
+            padding: 8px;
+        }
+        .credential-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            transition: 0.2s;
+        }
+        .credential-btn:hover {
+            color: white;
+        }
+        .tds-breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .tds-breakdown-table th {
+            padding: 8px;
+            font-size: 0.7rem;
+        }
+        .tds-breakdown-table td {
+            padding: 8px;
+        }
+        @keyframes skeleton-loading {
+            0% { opacity: 0.35; }
+            50% { opacity: 0.7; }
+            100% { opacity: 0.35; }
+        }
+        .skeleton-cell {
+            height: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            animation: skeleton-loading 1.6s infinite ease-in-out;
+            width: 80%;
+        }
+        .audit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.8rem;
+        }
+        .audit-item:last-child {
+            border-bottom: none;
+        }
+        .audit-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .search-filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+        @media (max-width: 1024px) {
+            .search-filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .search-filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body style="background: var(--bg-darker);">
+
+    <div class="dashboard-wrapper">
+        <!-- Mobile Header -->
+        <header class="mobile-header flex-between no-print" style="display: none; padding: 1rem; background: var(--bg-darker); border-bottom: 1px solid var(--card-border); position: sticky; top: 0; z-index: 100;">
+            <div class="logo">
+                <img src="tenderX%20Logo.png" alt="TenderX" style="width: 30px;">
+                <span style="font-size: 1.1rem; font-weight: 800;">TenderX <span class="text-muted">Admin</span></span>
+            </div>
+            <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff" style="width: 32px; height: 32px; border-radius: 8px;">
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="index.html" class="logo" style="margin-bottom: 3rem;">
+                <img src="tenderX%20Logo.png" alt="TenderX Logo" class="logo-img">
+                <span>TenderX Solutions</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link">
+                            <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="submissions.html" class="nav-link">
+                            <i class="fas fa-file-invoice"></i> <span>Submissions</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="contractors.html" class="nav-link">
+                            <i class="fas fa-users"></i> <span>Contractors</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="clients.html" class="nav-link active">
+                            <i class="fas fa-user-tie"></i> <span>Clients</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="documents.html" class="nav-link">
+                            <i class="fas fa-folder-open"></i> <span>Documents</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="tds-summary.html" class="nav-link">
+                            <i class="fas fa-calculator"></i> <span>TDS Summary</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="gst-calculator.html" class="nav-link">
+                            <i class="fas fa-receipt"></i> <span>GST Calculator</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <ul style="margin-top: auto; padding-top: 5rem;">
+                    <li>
+                        <a href="javascript:void(0)" onclick="logoutAdmin()" class="nav-link" style="color: var(--accent);">
+                            <i class="fas fa-right-from-bracket"></i> <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="flex-between mb-lg">
+                <div>
+                    <h1 class="title" style="font-size: 2rem; margin-bottom: 0.5rem;">Clients</h1>
+                    <p class="text-muted">TaxPoint dashboard managing client compliance, profiles, & returns.</p>
+                </div>
+                <div class="flex gap-md" style="align-items: center;">
+                    <div class="card p-sm flex" style="align-items: center; gap: 8px;">
+                        <i class="fas fa-calendar-alt" style="color: var(--primary);"></i> <span id="currentDate">-- --, ----</span>
+                    </div>
+                    <input type="file" id="csvFileInput" accept=".csv" onchange="importCSVFile(event)" style="display: none;">
+                    <button onclick="document.getElementById('csvFileInput').click()" class="btn outline" style="color: #6366f1; border-color: rgba(99, 102, 241, 0.3);">
+                        <i class="fas fa-file-import"></i> Bulk Upload CSV
+                    </button>
+                    <button onclick="openClientForm()" class="btn primary">
+                        <i class="fas fa-user-plus"></i> Add New Client
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Counters -->
+            <div class="grid-4 mb-lg">
+                <div class="card p-md">
+                    <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 0.5rem;">Total Clients</p>
+                    <div class="flex-between" style="align-items: flex-end;">
+                        <h2 id="statTotalClients" class="title" style="font-size: 2rem;">0</h2>
+                        <span class="badge primary" style="font-size: 0.7rem;"><i class="fas fa-users"></i> Directory</span>
+                    </div>
+                </div>
+                <div class="card p-md" style="border-left: 4px solid #10b981;">
+                    <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 0.5rem;">Active Accounts</p>
+                    <div class="flex-between" style="align-items: flex-end;">
+                        <h2 id="statActiveClients" class="title" style="font-size: 2rem;">0</h2>
+                        <span style="color: #10b981; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Active</span>
+                    </div>
+                </div>
+                <div class="card p-md" style="border-left: 4px solid #6366f1;">
+                    <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 0.5rem;">Monthly Filing</p>
+                    <div class="flex-between" style="align-items: flex-end;">
+                        <h2 id="statMonthlyClients" class="title" style="font-size: 2rem;">0</h2>
+                        <span style="color: #6366f1; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Monthly</span>
+                    </div>
+                </div>
+                <div class="card p-md" style="border-left: 4px solid #8b5cf6;">
+                    <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 0.5rem;">Quarterly Filing</p>
+                    <div class="flex-between" style="align-items: flex-end;">
+                        <h2 id="statQuarterlyClients" class="title" style="font-size: 2rem;">0</h2>
+                        <span style="color: #8b5cf6; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Quarterly</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search, filter and sorting controls -->
+            <div class="card p-md mb-lg">
+                <div class="search-filter-grid">
+                    <div class="form-group" style="margin: 0;">
+                        <input type="text" id="searchInput" placeholder="Search by name, GSTIN, PAN or Email..." onkeyup="filterClients()" class="input">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select id="statusFilter" onchange="filterClients()" class="input">
+                            <option value="all">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select id="sortSelect" onchange="filterClients()" class="input">
+                            <option value="serial_no">Sort: Serial Number</option>
+                            <option value="name">Sort: Client Name</option>
+                            <option value="updated_at">Sort: Last Updated</option>
+                        </select>
+                    </div>
+                    <button onclick="exportCSV()" class="btn outline" style="width: 100%; color: #10b981; border-color: rgba(16, 185, 129, 0.3);">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Client Directory Table -->
+            <div class="table-wrapper animate-fade">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Client Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>GST Number</th>
+                            <th>GST Type</th>
+                            <th>PAN</th>
+                            <th>FY</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientTableBody">
+                        <tr>
+                            <td colspan="11" style="text-align: center; padding: 4rem;"><i class="fas fa-spinner fa-spin"></i> Loading clients...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Simple custom pagination controls for large datasets (700+ clients) -->
+            <div class="flex-between mt-md" style="padding: 10px;">
+                <span id="paginationInfo" class="text-muted" style="font-size: 0.9rem;">Showing 0 to 0 of 0 clients</span>
+                <div class="flex gap-sm">
+                    <button onclick="changePage(-1)" id="prevPageBtn" class="btn outline" style="padding: 8px 16px;"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="changePage(1)" id="nextPageBtn" class="btn outline" style="padding: 8px 16px;"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Client Detail Slide Panel (Drawer) -->
+    <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+    <div class="drawer-overlay" id="clientDrawer">
+        <div class="flex-between mb-lg" style="border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
+            <h2 id="drawerTitle" style="font-size: 1.5rem; font-weight: 800; color: white;">Client Details</h2>
+            <button onclick="closeDrawer()" class="close-btn" style="cursor: pointer; background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem;"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div id="drawerContent">
+            <!-- Tabs / Sections inside Drawer -->
+            <div class="flex gap-sm mb-lg" style="border-bottom: 1px solid var(--card-border); padding-bottom: 10px;">
+                <button onclick="switchTab('profile')" id="tab-profile" class="btn primary" style="padding: 8px 16px; font-size: 0.85rem;">Profile & Credentials</button>
+                <button onclick="switchTab('compliance')" id="tab-compliance" class="btn outline" style="padding: 8px 16px; font-size: 0.85rem;">GST Timeline</button>
+                <button onclick="switchTab('tds')" id="tab-tds" class="btn outline" style="padding: 8px 16px; font-size: 0.85rem;">TDS Summary</button>
+            </div>
+
+            <!-- Tab 1: Profile & Credentials -->
+            <div id="tabContent-profile" class="tab-pane">
+                <form id="clientForm" onsubmit="saveClient(event)">
+                    <input type="hidden" id="form-id">
+                    
+                    <h4 style="color: var(--primary); margin-bottom: 1rem; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">A. Client Profile Details</h4>
+                    <div class="grid-2 mb-md">
+                        <div class="form-group">
+                            <label class="label">Serial Number (S.No)</label>
+                            <input type="number" id="form-serial" class="input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Client Name</label>
+                            <input type="text" id="form-name" class="input" required>
+                        </div>
+                    </div>
+                    <div class="grid-2 mb-md">
+                        <div class="form-group">
+                            <label class="label">Email Address</label>
+                            <input type="email" id="form-email" class="input">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Mobile Number</label>
+                            <input type="text" id="form-phone" class="input">
+                        </div>
+                    </div>
+                    <div class="grid-2 mb-md">
+                        <div class="form-group">
+                            <label class="label">GST Number</label>
+                            <input type="text" id="form-gst" class="input">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">PAN</label>
+                            <input type="text" id="form-pan" class="input">
+                        </div>
+                    </div>
+                    <div class="grid-3 mb-lg">
+                        <div class="form-group">
+                            <label class="label">Financial Year (FY)</label>
+                            <input type="text" id="form-fy" class="input" value="2025-2026">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">GST Type</label>
+                            <select id="form-gst-type" class="input">
+                                <option value="Monthly">Monthly</option>
+                                <option value="Quarterly">Quarterly</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Account Status</label>
+                            <select id="form-status" class="input">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h4 style="color: var(--primary); margin-bottom: 1rem; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">B. GST Portal Credentials</h4>
+                    <div class="grid-2 mb-lg">
+                        <div class="form-group">
+                            <label class="label">GST Portal ID</label>
+                            <div class="credential-box">
+                                <input type="text" id="form-gst-id" placeholder="Portal Username">
+                                <button type="button" class="credential-btn" onclick="copyField('form-gst-id')"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">GST Portal Password</label>
+                            <div class="credential-box">
+                                <input type="password" id="form-gst-password" placeholder="Portal Password">
+                                <button type="button" class="credential-btn" onclick="togglePasswordVisibility('form-gst-password')"><i class="fas fa-eye" id="toggle-pwd-icon"></i></button>
+                                <button type="button" class="credential-btn" onclick="copyField('form-gst-password')"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--card-border); padding-top: 1.5rem;" class="flex gap-md">
+                        <button type="submit" class="btn primary" style="flex: 1;"><i class="fas fa-save"></i> Save Client Profile</button>
+                        <button type="button" onclick="closeDrawer()" class="btn outline" style="flex: 1;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab 2: GST Compliance Timeline -->
+            <div id="tabContent-compliance" class="tab-pane hidden">
+                <div class="flex-between mb-md">
+                    <h4 style="color: var(--primary); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">C. GST Compliance History & Timeline</h4>
+                    <button onclick="openReturnForm()" class="btn outline" style="padding: 6px 12px; font-size: 0.75rem;"><i class="fas fa-plus"></i> Add Status</button>
+                </div>
+
+                <!-- Quick Return Form -->
+                <div id="quickReturnForm" class="card p-md mb-lg hidden" style="border: 1px dashed var(--primary);">
+                    <h5 class="mb-sm" style="color: white; font-weight: 700;">Record Return Status</h5>
+                    <div class="grid-3 mb-sm">
+                        <div class="form-group">
+                            <label class="label">Return Type</label>
+                            <select id="ret-type" class="input">
+                                <option value="GSTR-1">GSTR-1</option>
+                                <option value="GSTR-3B">GSTR-3B</option>
+                                <option value="ITR">ITR</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Month</label>
+                            <select id="ret-month" class="input">
+                                <option value="N/A">N/A</option>
+                                <option value="April">April</option>
+                                <option value="May">May</option>
+                                <option value="June">June</option>
+                                <option value="July">July</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="October">October</option>
+                                <option value="November">November</option>
+                                <option value="December">December</option>
+                                <option value="January">January</option>
+                                <option value="February">February</option>
+                                <option value="March">March</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">FY</label>
+                            <input type="text" id="ret-fy" class="input" value="2025-2026">
+                        </div>
+                    </div>
+                    <div class="grid-2 mb-md">
+                        <div class="form-group">
+                            <label class="label">Status</label>
+                            <select id="ret-status" class="input">
+                                <option value="Filed">Filed</option>
+                                <option value="Due Soon">Due Soon</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Filed Date</label>
+                            <input type="date" id="ret-date" class="input">
+                        </div>
+                    </div>
+                    <div class="flex gap-sm">
+                        <button onclick="saveReturnStatus()" class="btn primary" style="font-size: 0.8rem; padding: 6px 12px;">Submit</button>
+                        <button onclick="document.getElementById('quickReturnForm').classList.add('hidden')" class="btn outline" style="font-size: 0.8rem; padding: 6px 12px;">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="timeline-container" id="timelineList">
+                    <p class="text-muted text-center py-xl">No compliance entries found.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: TDS Summary Integration -->
+            <div id="tabContent-tds" class="tab-pane hidden">
+                <div class="flex-between mb-md">
+                    <h4 style="color: var(--primary); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">D. Integrated TDS Summaries</h4>
+                    <button onclick="downloadTDSStatement()" class="btn outline" style="padding: 6px 12px; font-size: 0.75rem; color: var(--primary); border-color: rgba(99, 102, 241, 0.3);"><i class="fas fa-file-pdf"></i> Download Statement</button>
+                </div>
+
+                <div class="card p-md mb-md flex-between" style="background: rgba(99, 102, 241, 0.05);">
+                    <div>
+                        <p class="text-muted" style="font-size: 0.8rem;">Total TDS Claimed</p>
+                        <h3 id="tdsGrandTotal" style="color: white; font-weight: 800; font-size: 1.4rem;">₹ 0.00</h3>
+                    </div>
+                    <div style="text-align: right;">
+                        <p class="text-muted" style="font-size: 0.8rem;">Last Updated</p>
+                        <p id="tdsLastUpdated" style="color: white; font-weight: 600; font-size: 0.9rem;">N/A</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="tds-breakdown-table">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Financial Year</th>
+                                <th style="text-align: right;">TDS Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tdsBreakdownBody">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No TDS records synchronized.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Hidden div to generate print PDF -->
+                <div style="display: none;">
+                    <div id="tdsPrintContainer" style="color: black !important; padding: 30px; font-family: 'Inter', sans-serif;">
+                        <h2 style="text-align: center; border-bottom: 2px solid black; padding-bottom: 10px;">TenderX Solutions - TDS Summary</h2>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid black;">
+                                    <th style="text-align: left; padding: 10px;">Month</th>
+                                    <th style="text-align: left; padding: 10px;">Financial Year</th>
+                                    <th style="text-align: right; padding: 10px;">TDS Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tdsPrintBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Mobile Bottom Nav -->
+        <nav class="mobile-bottom-nav no-print">
+            <a href="dashboard.html" class="mobile-nav-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>Stats</span>
+            </a>
+            <a href="submissions.html" class="mobile-nav-item">
+                <i class="fas fa-file-invoice"></i>
+                <span>Bids</span>
+            </a>
+            <a href="contractors.html" class="mobile-nav-item">
+                <i class="fas fa-users"></i>
+                <span>Contractors</span>
+            </a>
+            <a href="clients.html" class="mobile-nav-item active">
+                <i class="fas fa-user-tie"></i>
+                <span>Clients</span>
+            </a>
+            <a href="documents.html" class="mobile-nav-item">
+                <i class="fas fa-folder-open"></i>
+                <span>Docs</span>
+            </a>
+            <a href="tds-summary.html" class="mobile-nav-item">
+                <i class="fas fa-calculator"></i>
+                <span>TDS</span>
+            </a>
+            <a href="gst-calculator.html" class="mobile-nav-item">
+                <i class="fas fa-receipt"></i>
+                <span>GST</span>
+            </a>
+        </nav>
+
+    <!-- Toastify & Supabase -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-init.js"></script>
+
+    <script>
+        let allClients = [];
+        let filteredClientsList = [];
+        let currentSelectedClient = null;
+
+        // Pagination State
+        let currentPage = 1;
+        const itemsPerPage = 20; // Pagination to optimize 700+ rows loading
+
+        // In-memory or localStorage audit logging helper
+        function logAuditActivity(action, details) {
+            const logs = JSON.parse(localStorage.getItem('tenderx_audit_logs') || '[]');
+            const newLog = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                action: action,
+                details: details
+            };
+            logs.unshift(newLog);
+            if (logs.length > 30) logs.pop();
+            localStorage.setItem('tenderx_audit_logs', JSON.stringify(logs));
+            loadAuditTrail();
+        }
+
+        function loadAuditTrail() {
+            const container = document.getElementById('auditTrailList');
+            if (!container) return;
+            const logs = JSON.parse(localStorage.getItem('tenderx_audit_logs') || '[]');
+            if (logs.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted py-md">No activity recorded yet.</p>';
+                return;
+            }
+            container.innerHTML = logs.map(log => {
+                const timeStr = new Date(log.timestamp).toLocaleTimeString('en-IN', {
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+                const dateStr = new Date(log.timestamp).toLocaleDateString('en-IN', {
+                    day: 'numeric', month: 'short'
+                });
+                return `
+                    <div class="audit-item">
+                        <div>
+                            <span class="badge primary" style="padding: 2px 8px; font-size: 0.65rem; margin-right: 8px;">${log.action}</span>
+                            <span style="color: white; font-weight: 500;">${log.details}</span>
+                        </div>
+                        <span class="audit-time">${dateStr}, ${timeStr}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Animated counter helper
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (!obj) return;
+            if (start === end) {
+                obj.innerText = end;
+                return;
+            }
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerText = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Inactivity session checks
+        function initSessionTimeoutCheck() {
+            let lastActivity = Date.now();
+            document.addEventListener('mousemove', () => lastActivity = Date.now());
+            document.addEventListener('keypress', () => lastActivity = Date.now());
+
+            setInterval(async () => {
+                const inactiveTime = Date.now() - lastActivity;
+                if (inactiveTime > 12 * 60 * 1000) { // 12 mins
+                    Toastify({
+                        text: "Warning: Inactivity detected. Session will terminate soon.",
+                        style: { background: "#f59e0b" },
+                        duration: 5000
+                    }).showToast();
+                }
+                if (inactiveTime > 15 * 60 * 1000) { // 15 mins
+                    Toastify({
+                        text: "Session timed out due to inactivity.",
+                        style: { background: "#f43f5e" }
+                    }).showToast();
+                    setTimeout(() => {
+                        window.logoutAdmin();
+                    }, 2000);
+                }
+            }, 60000);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load current date in header
+            const dateEl = document.getElementById('currentDate');
+            if (dateEl) {
+                dateEl.innerText = new Date().toLocaleDateString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric'
+                });
+            }
+            loadClientsData();
+            loadAuditTrail();
+            initSessionTimeoutCheck();
+            
+            // Log portal load
+            logAuditActivity("Session Init", "Super Admin logged in to Clients portal");
+        });
+
+        async function loadClientsData() {
+            const tableBody = document.getElementById('clientTableBody');
+            
+            // Skeleton loader
+            tableBody.innerHTML = Array(5).fill(0).map(() => `
+                <tr>
+                    <td><div class="skeleton-cell" style="width: 40px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 130px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 140px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 100px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 120px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 70px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 90px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 80px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 60px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 100px;"></div></td>
+                    <td><div class="skeleton-cell" style="width: 80px;"></div></td>
+                </tr>
+            `).join('');
+            
+            try {
+                if (typeof window.fetchClients !== 'function') throw new Error("fetchClients helper not defined.");
+                allClients = await window.fetchClients();
+                filteredClientsList = [...allClients];
+                renderTable();
+
+                // Stats calculation and animation
+                const total = allClients.length;
+                const active = allClients.filter(c => c.status === 'Active').length;
+                const monthly = allClients.filter(c => c.gst_type === 'Monthly' || !c.gst_type).length;
+                const quarterly = allClients.filter(c => c.gst_type === 'Quarterly').length;
+
+                animateValue('statTotalClients', 0, total, 500);
+                animateValue('statActiveClients', 0, active, 500);
+                animateValue('statMonthlyClients', 0, monthly, 500);
+                animateValue('statQuarterlyClients', 0, quarterly, 500);
+            } catch (err) {
+                console.error("Error loading clients:", err);
+                Toastify({ text: "Error loading client database: " + err.message, style: { background: "#f43f5e" } }).showToast();
+            }
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('clientTableBody');
+            tableBody.innerHTML = '';
+
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const paginatedItems = filteredClientsList.slice(startIdx, endIdx);
+
+            if (paginatedItems.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="11" style="text-align: center; padding: 4rem; color: var(--text-muted);">
+                            <i class="fas fa-folder-open" style="font-size: 3rem; color: var(--primary); opacity: 0.5; margin-bottom: 1rem; display: block;"></i>
+                            <p style="font-weight: 700; color: white; font-size: 1.1rem; margin-bottom: 0.25rem;">No clients matching filters</p>
+                            <p style="font-size: 0.85rem; max-width: 320px; margin: 0 auto;">Try clearing search or filters to see all available client records.</p>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('paginationInfo').innerText = "Showing 0 to 0 of 0 clients";
+                return;
+            }
+
+            paginatedItems.forEach(client => {
+                const updatedDate = new Date(client.updated_at).toLocaleDateString('en-IN', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                });
+                
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.onclick = (e) => {
+                    // Do not trigger modal if action buttons were clicked
+                    if (e.target.closest('button') || e.target.closest('a')) return;
+                    openClientDrawer(client);
+                };
+                
+                tr.innerHTML = `
+                    <td style="font-weight: 800; color: var(--primary);">#${client.serial_no}</td>
+                    <td style="font-weight: 600; color: white;">${client.name}</td>
+                    <td>${client.email || '<span class="text-muted">N/A</span>'}</td>
+                    <td>${client.phone || '<span class="text-muted">N/A</span>'}</td>
+                    <td style="font-family: monospace; font-size: 0.9rem;">${client.gst_number || '<span class="text-muted">N/A</span>'}</td>
+                    <td><span class="badge primary">${client.gst_type || 'Monthly'}</span></td>
+                    <td style="font-family: monospace; font-size: 0.9rem;">${client.pan || '<span class="text-muted">N/A</span>'}</td>
+                    <td><span class="badge primary">${client.fy || '2025-2026'}</span></td>
+                    <td><span class="status-pill ${client.status === 'Active' ? 'status-approved' : 'status-rejected'}">${client.status || 'Active'}</span></td>
+                    <td style="font-size: 0.85rem; color: var(--text-muted);">${updatedDate}</td>
+                    <td style="text-align: center;">
+                        <button onclick="openClientDrawerBySerial(${client.serial_no})" class="btn outline" style="padding: 6px 12px; font-size: 0.8rem; margin-right: 5px;" title="View Details"><i class="fas fa-eye"></i></button>
+                        <button onclick="deleteClientRecord('${client.id}')" class="btn outline" style="padding: 6px 12px; font-size: 0.8rem; color: var(--accent); border-color: rgba(244, 63, 94, 0.2);" title="Delete"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Update pagination text & buttons
+            const total = filteredClientsList.length;
+            const actualEnd = Math.min(endIdx, total);
+            document.getElementById('paginationInfo').innerText = `Showing ${total === 0 ? 0 : startIdx + 1} to ${actualEnd} of ${total} clients`;
+            
+            document.getElementById('prevPageBtn').disabled = currentPage === 1;
+            document.getElementById('nextPageBtn').disabled = endIdx >= total;
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            renderTable();
+        }
+
+        function filterClients() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const sort = document.getElementById('sortSelect').value;
+
+            filteredClientsList = allClients.filter(c => {
+                const matchesSearch = c.name.toLowerCase().includes(query) ||
+                    (c.gst_number && c.gst_number.toLowerCase().includes(query)) ||
+                    (c.pan && c.pan.toLowerCase().includes(query)) ||
+                    (c.email && c.email.toLowerCase().includes(query));
+                
+                const matchesStatus = status === 'all' || c.status === status;
+                return matchesSearch && matchesStatus;
+            });
+
+            // Sorting
+            filteredClientsList.sort((a, b) => {
+                if (sort === 'name') return a.name.localeCompare(b.name);
+                if (sort === 'updated_at') return new Date(b.updated_at) - new Date(a.updated_at);
+                return a.serial_no - b.serial_no;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function openClientDrawer(client) {
+            currentSelectedClient = client;
+            document.getElementById('drawerTitle').innerText = `Client Details: ${client.name}`;
+            
+            // Populate form
+            document.getElementById('form-id').value = client.id || '';
+            document.getElementById('form-serial').value = client.serial_no || '';
+            document.getElementById('form-name').value = client.name || '';
+            document.getElementById('form-email').value = client.email || '';
+            document.getElementById('form-phone').value = client.phone || '';
+            document.getElementById('form-gst').value = client.gst_number || '';
+            document.getElementById('form-gst-type').value = client.gst_type || 'Monthly';
+            document.getElementById('form-pan').value = client.pan || '';
+            document.getElementById('form-fy').value = client.fy || '2025-2026';
+            document.getElementById('form-status').value = client.status || 'Active';
+            document.getElementById('form-gst-id').value = client.gst_id || '';
+            document.getElementById('form-gst-password').value = client.gst_password || '';
+
+            // Switch to Profile Tab by default
+            switchTab('profile');
+
+            // Open overlay
+            document.getElementById('drawerBackdrop').classList.add('active');
+            document.getElementById('clientDrawer').classList.add('active');
+
+            // Load Compliance and TDS data dynamically
+            loadComplianceTimeline(client.serial_no);
+            loadTDSSummary(client.serial_no);
+        }
+
+        function openClientDrawerBySerial(serialNo) {
+            const client = allClients.find(c => c.serial_no === serialNo);
+            if (client) openClientDrawer(client);
+        }
+
+        function openClientForm() {
+            // Populate form with empty defaults or next serial number
+            const nextSerial = allClients.length > 0 ? Math.max(...allClients.map(c => c.serial_no)) + 1 : 1;
+            openClientDrawer({
+                serial_no: nextSerial,
+                name: '',
+                email: '',
+                phone: '',
+                gst_number: '',
+                gst_type: 'Monthly',
+                pan: '',
+                fy: '2025-2026',
+                status: 'Active',
+                gst_id: '',
+                gst_password: ''
+            });
+            document.getElementById('drawerTitle').innerText = "Add New Client";
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawerBackdrop').classList.remove('active');
+            document.getElementById('clientDrawer').classList.remove('active');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tabContent-${tabName}`).classList.remove('hidden');
+
+            document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                btn.className = 'btn outline';
+                btn.style.padding = '8px 16px';
+                btn.style.fontSize = '0.85rem';
+            });
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.className = 'btn primary';
+            activeBtn.style.padding = '8px 16px';
+            activeBtn.style.fontSize = '0.85rem';
+        }
+
+        // Secure copy credential field helper
+        function copyField(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el || !el.value) {
+                Toastify({ text: "Nothing to copy", style: { background: "#f59e0b" } }).showToast();
+                return;
+            }
+            navigator.clipboard.writeText(el.value).then(() => {
+                Toastify({ text: "Copied Successfully", style: { background: "#10b981" } }).showToast();
+                logAuditActivity("Credentials Copy", `Copied ${elementId === 'form-gst-id' ? 'GST Username' : 'GST Password'} for client Serial #${currentSelectedClient ? currentSelectedClient.serial_no : 'N/A'}`);
+            }).catch(e => {
+                Toastify({ text: "Copy failed", style: { background: "#f43f5e" } }).showToast();
+            });
+        }
+
+        function togglePasswordVisibility(elementId) {
+            const el = document.getElementById(elementId);
+            const icon = document.getElementById('toggle-pwd-icon');
+            if (el.type === 'password') {
+                el.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                el.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        async function saveClient(e) {
+            e.preventDefault();
+            const clientData = {
+                serial_no: parseInt(document.getElementById('form-serial').value),
+                name: document.getElementById('form-name').value,
+                email: document.getElementById('form-email').value,
+                phone: document.getElementById('form-phone').value,
+                gst_number: document.getElementById('form-gst').value,
+                gst_type: document.getElementById('form-gst-type').value,
+                pan: document.getElementById('form-pan').value,
+                fy: document.getElementById('form-fy').value,
+                status: document.getElementById('form-status').value,
+                gst_id: document.getElementById('form-gst-id').value,
+                gst_password: document.getElementById('form-gst-password').value
+            };
+
+            const id = document.getElementById('form-id').value;
+            if (id) clientData.id = id;
+
+            try {
+                await window.upsertClient(clientData);
+                Toastify({ text: "Client profile saved successfully", style: { background: "#10b981" } }).showToast();
+                logAuditActivity(id ? "Profile Edit" : "Profile Create", `${id ? 'Updated' : 'Created'} client ${clientData.name} (Serial #${clientData.serial_no})`);
+                closeDrawer();
+                loadClientsData();
+            } catch (err) {
+                Toastify({ text: "Save failed: " + err.message, style: { background: "#f43f5e" } }).showToast();
+            }
+        }
+
+        async function deleteClientRecord(id) {
+            const client = allClients.find(c => c.id === id);
+            if (confirm("Are you sure you want to delete this client record?")) {
+                try {
+                    await window.deleteClient(id);
+                    Toastify({ text: "Client record deleted", style: { background: "#10b981" } }).showToast();
+                    logAuditActivity("Client Delete", `Deleted client ${client ? client.name : 'Unknown'} (Serial #${client ? client.serial_no : 'N/A'})`);
+                    loadClientsData();
+                } catch (err) {
+                    Toastify({ text: "Delete failed: " + err.message, style: { background: "#f43f5e" } }).showToast();
+                }
+            }
+        }
+
+        // --- Compliance Return List Section ---
+        async function loadComplianceTimeline(clientSerial) {
+            const list = document.getElementById('timelineList');
+            list.innerHTML = '<p class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Fetching timeline...</p>';
+
+            try {
+                const data = await window.fetchClientGSTTimeline(clientSerial);
+                list.innerHTML = '';
+
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-muted text-center py-xl">No compliance entries recorded yet.</p>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'timeline-item';
+                    
+                    const formattedDate = item.filed_date ? new Date(item.filed_date).toLocaleDateString('en-IN', {
+                        day: 'numeric', month: 'short', year: 'numeric'
+                    }) : 'N/A';
+
+                    let statusClass = 'pending';
+                    if (item.status === 'Filed') statusClass = 'filed';
+                    else if (item.status === 'Due Soon') statusClass = 'due';
+
+                    row.innerHTML = `
+                        <div>
+                            <strong style="color: white; font-size: 1rem;">${item.type}</strong>
+                            <p class="text-muted" style="font-size: 0.8rem; margin: 2px 0 0 0;">
+                                Month: ${item.month} | FY: ${item.fy}
+                            </p>
+                        </div>
+                        <div class="flex gap-md" style="align-items: center;">
+                            <span class="status-badge ${statusClass}">${item.status}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">${formattedDate}</span>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+            } catch (e) {
+                list.innerHTML = `<p class="text-center text-muted" style="color: var(--accent);">Failed to load timeline: ${e.message}</p>`;
+            }
+        }
+
+        function openReturnForm() {
+            document.getElementById('quickReturnForm').classList.remove('hidden');
+            // Reset fields
+            document.getElementById('ret-fy').value = currentSelectedClient ? currentSelectedClient.fy || '2025-2026' : '2025-2026';
+            document.getElementById('ret-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        async function saveReturnStatus() {
+            if (!currentSelectedClient) return;
+            const retData = {
+                client_serial: currentSelectedClient.serial_no,
+                type: document.getElementById('ret-type').value,
+                month: document.getElementById('ret-month').value,
+                fy: document.getElementById('ret-fy').value,
+                status: document.getElementById('ret-status').value,
+                filed_date: document.getElementById('ret-date').value || null
+            };
+
+            try {
+                await window.saveClientReturn(retData);
+                Toastify({ text: "Return status updated", style: { background: "#10b981" } }).showToast();
+                logAuditActivity("GST Status Update", `Updated return status for Serial #${retData.client_serial} (${retData.type} - ${retData.month}: ${retData.status})`);
+                document.getElementById('quickReturnForm').classList.add('hidden');
+                loadComplianceTimeline(currentSelectedClient.serial_no);
+            } catch (err) {
+                Toastify({ text: "Failed to update return status: " + err.message, style: { background: "#f43f5e" } }).showToast();
+            }
+        }
+
+        // --- TDS Integration Section ---
+        let currentTDSData = [];
+        let currentTDSRecord = null;
+
+        async function loadTDSSummary(clientSerial) {
+            const body = document.getElementById('tdsBreakdownBody');
+            const totalEl = document.getElementById('tdsGrandTotal');
+            const lastUpdatedEl = document.getElementById('tdsLastUpdated');
+
+            body.innerHTML = '<tr><td colspan="3" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+            totalEl.innerText = '₹ 0.00';
+            lastUpdatedEl.innerText = 'N/A';
+            currentTDSData = [];
+            currentTDSRecord = null;
+
+            try {
+                const record = await window.fetchClientTDSSummary(clientSerial);
+                body.innerHTML = '';
+
+                if (!record || !record.monthly_data || record.monthly_data.length === 0) {
+                    body.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No TDS records synced. Create a summary in the TDS Summary module using S.No.</td></tr>';
+                    return;
+                }
+
+                currentTDSRecord = record;
+                currentTDSData = record.monthly_data;
+
+                currentTDSData.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: 600; color: white;">${item.month}</td>
+                        <td><span class="badge primary">${item.fy || record.financial_year || '2025-2026'}</span></td>
+                        <td style="text-align: right; font-weight: 700; color: var(--primary);">₹ ${parseFloat(item.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    `;
+                    body.appendChild(tr);
+                });
+
+                totalEl.innerText = '₹ ' + (record.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                
+                const rawDate = record.created_at || record.timestamp || new Date();
+                lastUpdatedEl.innerText = new Date(rawDate).toLocaleDateString('en-IN', {
+                    day: 'numeric', month: 'short'
+                });
+            } catch (e) {
+                console.error("TDS load error:", e);
+                body.innerHTML = `<tr><td colspan="3" class="text-center text-muted" style="color: var(--accent);">Failed to load TDS breakdown.</td></tr>`;
+            }
+        }
+
+        function downloadTDSStatement() {
+            if (currentTDSData.length === 0) {
+                Toastify({ text: "No TDS records to download", style: { background: "#f59e0b" } }).showToast();
+                return;
+            }
+
+            const printBody = document.getElementById('tdsPrintBody');
+            printBody.innerHTML = '';
+            
+            let sum = 0;
+            currentTDSData.forEach(item => {
+                const amt = parseFloat(item.amount) || 0;
+                sum += amt;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">${item.month}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">${item.fy || (currentTDSRecord ? currentTDSRecord.financial_year : '') || '2025-2026'}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">₹ ${amt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                `;
+                printBody.appendChild(tr);
+            });
+
+            // Add total row
+            const totalTr = document.createElement('tr');
+            totalTr.innerHTML = `
+                <td colspan="2" style="padding: 10px; font-weight: bold; border-top: 2px solid black;">Total TDS</td>
+                <td style="padding: 10px; font-weight: bold; text-align: right; border-top: 2px solid black;">₹ ${sum.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+            `;
+            printBody.appendChild(totalTr);
+
+            const opt = {
+                margin:       1,
+                filename:     `TDS_Summary_Client_${currentSelectedClient.serial_no}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            const element = document.getElementById('tdsPrintContainer');
+            html2pdf().set(opt).from(element).save();
+            logAuditActivity("TDS Export", `Exported TDS Statement PDF for Serial #${currentSelectedClient.serial_no}`);
+        }
+
+        // CSV Export Helper
+        function exportCSV() {
+            if (allClients.length === 0) return;
+
+            const headers = ["Serial No", "Client Name", "Email", "Phone", "GST Number", "GST Type", "PAN", "FY", "Status", "Last Updated"];
+            const csvRows = [headers.join(",")];
+
+            allClients.forEach(c => {
+                csvRows.push([
+                    c.serial_no,
+                    `"${c.name.replace(/"/g, '""')}"`,
+                    c.email || "",
+                    c.phone || "",
+                    c.gst_number || "",
+                    c.gst_type || "Monthly",
+                    c.pan || "",
+                    c.fy || "",
+                    c.status || "Active",
+                    new Date(c.updated_at).toISOString().split('T')[0]
+                ].join(","));
+            });
+
+            const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "TenderX_Clients_Export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function importCSVFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Locate bulk upload button
+            const uploadBtn = document.querySelector('button[onclick*="csvFileInput"]');
+            const originalBtnHTML = uploadBtn ? uploadBtn.innerHTML : "";
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const text = e.target.result;
+                try {
+                    const lines = parseCSVText(text);
+                    if (lines.length < 2) {
+                        Toastify({ text: "Empty CSV or invalid format", style: { background: "#f59e0b" } }).showToast();
+                        return;
+                    }
+
+                    // Headers: normalize headers
+                    const headers = lines[0].map(h => h.trim().toLowerCase());
+                    
+                    // Map header names to table fields
+                    const fieldMapping = {
+                        "serial no": "serial_no",
+                        "serial": "serial_no",
+                        "s.no": "serial_no",
+                        "client name": "name",
+                        "name": "name",
+                        "firm name": "name",
+                        "email": "email",
+                        "phone": "phone",
+                        "mobile": "phone",
+                        "gst number": "gst_number",
+                        "gstin": "gst_number",
+                        "gst": "gst_number",
+                        "gst no": "gst_number",
+                        "gst type": "gst_type",
+                        "gsttype": "gst_type",
+                        "filing frequency": "gst_type",
+                        "pan": "pan",
+                        "fy": "fy",
+                        "financial year": "fy",
+                        "status": "status",
+                        "gst portal id": "gst_id",
+                        "gst id": "gst_id",
+                        "username": "gst_id",
+                        "gst_id": "gst_id",
+                        "gst portal password": "gst_password",
+                        "gst password": "gst_password",
+                        "gst_password": "gst_password",
+                        "password": "gst_password"
+                    };
+
+                    const headerIndexes = {};
+                    headers.forEach((h, idx) => {
+                        if (fieldMapping[h]) {
+                            headerIndexes[fieldMapping[h]] = idx;
+                        }
+                    });
+
+                    // Fallback default index positions if no matching header found
+                    const getVal = (row, field, defaultIdx) => {
+                        const idx = headerIndexes[field] !== undefined ? headerIndexes[field] : defaultIdx;
+                        return idx !== -1 && idx < row.length ? row[idx].trim() : "";
+                    };
+
+                    let successCount = 0;
+                    let errorCount = 0;
+                    const errorsList = [];
+                    const clientDataArray = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const row = lines[i];
+                        if (row.length === 0 || (row.length === 1 && row[0] === "")) continue;
+
+                        const serialNoStr = getVal(row, "serial_no", 0);
+                        const serialNo = parseInt(serialNoStr);
+                        const name = getVal(row, "name", 1);
+
+                        if (isNaN(serialNo) || !name) {
+                            errorCount++;
+                            errorsList.push(`Row ${i + 1}: Missing Serial No or Client Name.`);
+                            continue;
+                        }
+
+                        // Determine GST type: default 'Monthly', override to 'Quarterly' if specified
+                        let gstType = getVal(row, "gst_type", -1);
+                        if (gstType) {
+                            gstType = gstType.trim().toLowerCase();
+                            if (gstType.startsWith('q') || gstType.includes('quarter')) {
+                                gstType = 'Quarterly';
+                            } else {
+                                gstType = 'Monthly';
+                            }
+                        } else {
+                            gstType = 'Monthly';
+                        }
+
+                        // Auto-assign default contact information if empty/blank
+                        let email = getVal(row, "email", 2);
+                        if (!email || email.trim() === '') {
+                            email = 'taxpointramban@gmail.com';
+                        }
+                        
+                        let phone = getVal(row, "phone", 3);
+                        if (!phone || phone.trim() === '') {
+                            phone = '7051140752';
+                        }
+
+                        // Auto-prepend password with "Aqib" if password is present and does not start with "Aqib"
+                        let gstPassword = getVal(row, "gst_password", 9);
+                        if (gstPassword && gstPassword.trim() !== '') {
+                            gstPassword = gstPassword.trim();
+                            if (!gstPassword.startsWith('Aqib')) {
+                                gstPassword = 'Aqib' + gstPassword;
+                            }
+                        } else {
+                            gstPassword = '';
+                        }
+
+                        clientDataArray.push({
+                            serial_no: serialNo,
+                            name: name,
+                            email: email,
+                            phone: phone,
+                            gst_number: getVal(row, "gst_number", 4),
+                            gst_type: gstType,
+                            pan: getVal(row, "pan", 5),
+                            fy: getVal(row, "fy", 6) || "2025-2026",
+                            status: getVal(row, "status", 7) || "Active",
+                            gst_id: getVal(row, "gst_id", 8),
+                            gst_password: gstPassword
+                        });
+                    }
+
+                    // Disable upload button and show start progress
+                    if (uploadBtn) {
+                        uploadBtn.disabled = true;
+                        uploadBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading... 0%`;
+                    }
+
+                    Toastify({ text: "Bulk importing started...", style: { background: "#6366f1" } }).showToast();
+
+                    // Process in batches of 100 to enable reliable progress bars and prevent connection timeouts
+                    const batchSize = 100;
+                    for (let i = 0; i < clientDataArray.length; i += batchSize) {
+                        const batch = clientDataArray.slice(i, i + batchSize);
+                        try {
+                            await window.upsertClient(batch);
+                            successCount += batch.length;
+                        } catch (err) {
+                            console.error(`Failed to import batch at index ${i}:`, err);
+                            errorCount += batch.length;
+                            errorsList.push(`Batch starting row ${i + 2}: ${err.message || err}`);
+                        }
+
+                        const pct = Math.min(100, Math.round(((i + batch.length) / clientDataArray.length) * 100));
+                        if (uploadBtn) {
+                            uploadBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading... ${pct}%`;
+                        }
+                    }
+
+                    Toastify({ 
+                        text: `Import Completed! Success: ${successCount}, Errors/Invalid: ${errorCount}`, 
+                        style: { background: successCount > 0 ? "#10b981" : "#f43f5e" },
+                        duration: 5000
+                    }).showToast();
+
+                    logAuditActivity("CSV Import", `Successfully imported/updated ${successCount} client records (Errors: ${errorCount})`);
+
+                    if (errorsList.length > 0) {
+                        // Display error list to user
+                        alert("Bulk Upload finished with some errors:\n\n" + errorsList.slice(0, 15).join("\n") + (errorsList.length > 15 ? `\n...and ${errorsList.length - 15} more errors.` : ""));
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    Toastify({ text: "Failed to parse CSV file: " + err.message, style: { background: "#f43f5e" } }).showToast();
+                } finally {
+                    // Restore upload button
+                    if (uploadBtn) {
+                        uploadBtn.disabled = false;
+                        uploadBtn.innerHTML = originalBtnHTML;
+                    }
+                    // Clear file input
+                    event.target.value = "";
+                    loadClientsData();
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Helper to parse CSV text correctly, handling commas inside quotes
+        function parseCSVText(text) {
+            const lines = [];
+            let row = [""];
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                const next = text[i+1];
+
+                if (c === '"') {
+                    if (inQuotes && next === '"') {
+                        row[row.length - 1] += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (c === ',' && !inQuotes) {
+                    row.push('');
+                } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                    if (c === '\r' && next === '\n') {
+                        i++;
+                    }
+                    lines.push(row);
+                    row = [''];
+                } else {
+                    row[row.length - 1] += c;
+                }
+            }
+            if (row.length > 1 || row[0] !== '') {
+                lines.push(row);
+            }
+            return lines;
+        }
+    </script>
+</body>
+</html>

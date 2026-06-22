@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDS Credit Received Summary | TenderX Solutions</title>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body class="dashboard-wrapper">
+
+    <!-- Premium Confirm Modal (Moved to Top for Viewport Flow) -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-card animate-fade-in">
+            <div class="confirm-icon">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h3 class="confirm-title">Delete Record?</h3>
+            <p class="confirm-text">This action cannot be undone. Are you sure you want to delete this summary record?</p>
+            <div class="confirm-actions">
+                <button onclick="closeConfirmModal()" class="btn outline confirm-btn">Cancel</button>
+                <button onclick="confirmDelete()" id="confirmDeleteBtn" class="btn primary confirm-btn" style="background: var(--accent);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Mobile Header -->
+    <header class="mobile-header flex-between no-print"
+        style="display: none; padding: 1rem; background: var(--bg-darker); border-bottom: 1px solid var(--card-border); position: sticky; top: 0; z-index: 100;">
+        <div class="logo">
+            <img src="tenderX%20Logo.png" alt="TenderX" style="width: 30px;">
+            <span style="font-size: 1.1rem; font-weight: 800;">TenderX <span class="text-muted">Admin</span></span>
+        </div>
+        <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff"
+            style="width: 32px; height: 32px; border-radius: 8px;">
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar no-print">
+        <a href="index.html" class="logo" style="margin-bottom: 3rem;">
+            <img src="tenderX%20Logo.png" alt="TenderX Logo" class="logo-img">
+            <span>TenderX Solutions</span>
+        </a>
+
+        <nav>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="submissions.html" class="nav-link">
+                        <i class="fas fa-file-invoice"></i> <span>Submissions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="contractors.html" class="nav-link">
+                        <i class="fas fa-users"></i> <span>Contractors</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="clients.html" class="nav-link">
+                        <i class="fas fa-user-tie"></i> <span>Clients</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="documents.html" class="nav-link">
+                        <i class="fas fa-folder-open"></i> <span>Documents</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tds-summary.html" class="nav-link active">
+                        <i class="fas fa-calculator"></i> <span>TDS Summary</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gst-calculator.html" class="nav-link">
+                        <i class="fas fa-receipt"></i> <span>GST Calculator</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul style="margin-top: auto; padding-top: 5rem;">
+                <li>
+                    <a href="javascript:void(0)" onclick="logoutAdmin()" class="nav-link" style="color: var(--accent);">
+                        <i class="fas fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="container py-lg">
+            <!-- Header Section -->
+            <div class="flex-between mb-lg no-print gap-md">
+                <div class="flex gap-md" style="align-items: center;">
+                    <div class="icon-box">
+                        <i class="fas fa-calculator" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h1 class="title" style="font-size: 1.8rem;">TDS Credit Summary</h1>
+                        <p class="text-muted">Generate professional financial summaries for clients</p>
+                    </div>
+                </div>
+                <div class="flex gap-sm">
+                    <button onclick="resetForm()" class="btn outline">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                    <a href="dashboard.html" class="btn outline">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <!-- INPUT SECTION -->
+            <div id="input-section" class="animate-fade-in no-print">
+                <div class="card p-lg mb-lg">
+                    <div class="grid-4 mb-lg">
+                        <div class="form-group">
+                            <label class="label">S.No / Ref No</label>
+                            <input type="text" id="s-no" placeholder="e.g. 01, 102" oninput="saveDraft()" class="input">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Customer Name</label>
+                            <input type="text" id="cust-name" placeholder="Full name of contractor"
+                                oninput="saveDraft()" class="input">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Department Name</label>
+                            <input type="text" id="dept-name" placeholder="e.g. PWD, PMGSY, RDD" oninput="saveDraft()"
+                                class="input">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Financial Year</label>
+                            <select id="fin-year" onchange="saveDraft()" class="input">
+                                <option value="2021-2022">2021 - 2022</option>
+                                <option value="2022-2023">2022 - 2023</option>
+                                <option value="2023-2024">2023 - 2024</option>
+                                <option value="2024-2025">2024 - 2025</option>
+                                <option value="2025-2026" selected>2025 - 2026</option>
+                                <option value="2026-2027">2026 - 2027</option>
+                                <option value="2027-2028">2027 - 2028</option>
+                                <option value="2028-2029">2028 - 2029</option>
+                                <option value="2029-2030">2029 - 2030</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Prepared By</label>
+                            <input type="text" id="prepared-by" placeholder="Name of accountant/staff" oninput="saveDraft()" class="input">
+                        </div>
+                    </div>
+
+                    <div class="mb-lg">
+                        <div class="flex-between mb-md">
+                            <h3 class="subtitle" style="font-weight: 700; color: white;">Month-wise TDS Data</h3>
+                            <p class="text-muted" style="font-style: italic; font-size: 0.8rem;">Enter individual
+                                amounts or sums like 5000+1200</p>
+                        </div>
+                        <div id="rows-container">
+                            <!-- Dynamic Rows injected here -->
+                        </div>
+                    </div>
+
+                    <div class="flex-between mt-lg pt-md" style="border-top: 1px solid var(--card-border); gap: 1rem;">
+                        <div class="flex gap-sm" style="flex: 1;">
+                            <button onclick="addRow()" class="btn outline" style="width: 100%;">
+                                <i class="fas fa-plus-circle" style="color: var(--primary);"></i> Add Month
+                            </button>
+                            <button onclick="addFullYear()" class="btn outline" style="width: 100%;">
+                                <i class="fas fa-calendar-plus" style="color: #10b981;"></i> Add Full FY
+                            </button>
+                        </div>
+                        <button id="generate-btn" onclick="generateOutput()" class="btn primary"
+                            style="width: 100%; max-width: 300px; padding: 15px;">
+                            Generate Summary <i class="fas fa-magic"></i>
+                        </button>
+                    </div>
+                    <div class="text-center mt-md">
+                        <button onclick="clearAllRows()" class="btn outline" style="border: none; font-size: 0.75rem; color: var(--accent); opacity: 0.7;">
+                            <i class="fas fa-eraser"></i> Clear All Data and Start Fresh
+                        </button>
+                    </div>
+                </div>
+                <div id="save-status" class="text-center text-muted hidden"
+                    style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em;">
+                    <i class="fas fa-check-circle" style="color: #10b981;"></i> Draft Auto-Saved
+                </div>
+            </div>
+
+            <!-- PAST SUMMARIES SECTION (New) -->
+            <div id="past-summaries-section" class="mt-lg no-print animate-fade-in">
+                <div class="flex-between mb-md">
+                    <h3 class="subtitle" style="font-weight: 700; color: white;">Recently Generated Summaries</h3>
+                    <button onclick="fetchPastSummaries()" class="btn outline"
+                        style="padding: 5px 12px; font-size: 0.8rem;">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Dept</th>
+                                <th class="amount">Total Amount</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="past-summaries-body">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted" style="padding: 40px;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading historical records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- OUTPUT SECTION (Hidden initially) -->
+            <div id="output-section" class="hidden animate-fade-in" style="position: relative;">
+                <div class="flex-between mb-md no-print">
+                    <button onclick="editInput()" class="btn outline">
+                        <i class="fas fa-arrow-left"></i> Back to Edit
+                    </button>
+                    <div class="flex gap-sm">
+                        <span id="entry-count" class="badge primary">0 Entries</span>
+                    </div>
+                </div>
+
+                <style>
+                    /* Premium Financial Document Styles */
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+                    .formal-doc {
+                        background: #ffffff !important;
+                        color: #1e293b !important;
+                        font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+                        padding: 40px 50px !important;
+                        max-width: 900px;
+                        margin: 0 auto;
+                        position: relative;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+                        border: 1px solid #e2e8f0;
+                        line-height: 1.5;
+                    }
+
+                    .formal-doc * { color: #1e293b !important; }
+
+                    /* Simplified View */
+                    .watermark { display: none !important; }
+
+                    /* Typography */
+                    .doc-title { font-size: 24px !important; font-weight: 800 !important; color: #0f172a !important; text-transform: uppercase; margin-bottom: 5px; }
+                    .doc-section-head { font-size: 16px !important; font-weight: 700 !important; border-bottom: 2px solid #0f172a; padding-bottom: 5px; margin-bottom: 15px; text-transform: uppercase; }
+                    .doc-content { font-size: 13px !important; }
+                    .doc-label { font-weight: 600; color: #64748b !important; font-size: 11px; text-transform: uppercase; }
+                    .doc-value { font-weight: 700; font-size: 14px; }
+
+                    /* Header */
+                    .header-main { border-bottom: 3px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; }
+                    .header-left .brand-name { font-size: 28px; font-weight: 800; color: #0f172a !important; line-height: 1; margin-bottom: 10px; }
+                    .header-right { text-align: right; font-size: 12px; }
+
+                    /* Info Grids */
+                    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-bottom: 30px; }
+                    .info-card { background: #f8fafc; padding: 15px; border-radius: 4px; border: 1px solid #e2e8f0; }
+
+                    /* Table Styles */
+                    .accounting-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px; }
+                    .accounting-table th { background: #0f172a !important; color: #ffffff !important; padding: 12px 10px; text-align: left; font-weight: 600; text-transform: uppercase; }
+                    .accounting-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+                    .accounting-table tr:nth-child(even) { background: #f8fafc; }
+                    .accounting-table .amount { text-align: right; font-family: 'Courier New', Courier, monospace; font-weight: 700; }
+                    .accounting-table .total-row td { background: #f1f5f9; font-weight: 800; border-top: 2px solid #0f172a; font-size: 13px; }
+                    
+                    /* Year Grouping */
+                    .year-group-row td { background: #eff6ff !important; font-weight: 800; color: #1e40af !important; text-transform: uppercase; letter-spacing: 0.1em; border-top: 2px solid #3b82f6; border-bottom: 2px solid #3b82f6; font-size: 11px; }
+
+                    /* Summary Box */
+                    .summary-container { display: flex; justify-content: flex-end; margin-bottom: 40px; }
+                    .summary-box { width: 350px; background: #ffffff; border: 2px solid #0f172a; padding: 0; }
+                    .summary-row { display: flex; justify-content: space-between; padding: 8px 15px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+                    .summary-row:last-child { border-bottom: none; background: #0f172a; }
+                    .summary-row:last-child * { color: #ffffff !important; font-weight: 800; font-size: 16px; }
+                    .summary-row .val { font-weight: 700; text-align: right; }
+
+                    /* Analytics Section - Simplified */
+                    .analytics-section { border-top: 1.5px solid #0f172a; padding: 20px 0; margin-bottom: 40px; }
+                    .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+                    .ana-card { text-align: center; border-right: 1px solid #e2e8f0; }
+                    .ana-card:last-child { border-right: none; }
+                    .ana-label { font-size: 10px; text-transform: uppercase; color: #64748b !important; margin-bottom: 5px; font-weight: 700; }
+                    .ana-val { font-size: 14px; font-weight: 800; color: #0f172a !important; }
+
+                    /* Signatures */
+                    .signature-area { display: flex; justify-content: space-between; margin-top: 60px; }
+                    .sig-box { text-align: center; width: 200px; }
+                    .sig-name { font-size: 13px; font-weight: 700; color: #0f172a !important; margin-bottom: 2px; min-height: 18px; text-transform: capitalize; }
+                    .sig-line { border-top: 1.5px solid #0f172a; margin-bottom: 5px; }
+                    .sig-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b !important; }
+
+                    /* Footer */
+                    .doc-footer { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center; font-size: 10px; color: #94a3b8 !important; }
+
+                    @media print {
+                        @page { size: A4; margin: 15mm; }
+                        body { background: #ffffff !important; }
+                        .no-print { display: none !important; }
+                        .formal-doc { box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; max-width: none !important; }
+                        .accounting-table { page-break-inside: auto; }
+                        .accounting-table tr { page-break-inside: avoid; page-break-after: auto; }
+                        .accounting-table thead { display: table-header-group; }
+                        .watermark { color: rgba(0, 0, 0, 0.05) !important; -webkit-print-color-adjust: exact; }
+                        .accounting-table th { background: #0f172a !important; -webkit-print-color-adjust: exact; }
+                        .summary-row:last-child { background: #0f172a !important; -webkit-print-color-adjust: exact; }
+                    }
+                </style>
+                <div id="print-area" class="formal-doc mb-lg">
+                    <!-- Clean Document -->
+                    
+                    <!-- Header Section -->
+                    <div class="header-main">
+                        <div class="header-left">
+                            <div class="brand-name">TenderX Consultancy</div>
+                            <div class="doc-content">
+                                Ramban, Jammu & Kashmir<br>
+                                <strong>Phone:</strong> +91 9149858527 | <strong>Email:</strong> rambantenders@gmail.com<br>
+                                <strong>GSTIN:</strong> 01ABCDE1234F1Z5 | <strong>PAN:</strong> ABCDE1234F
+                            </div>
+                        </div>
+                        <div class="header-right">
+                            <img src="tenderX%20Logo.png" alt="Logo" style="width: 70px; margin-bottom: 10px;"><br>
+                            <div class="doc-label">Statement Reference</div>
+                            <div class="doc-value" id="doc-ref-no">TX-TDS-000</div>
+                            <div class="doc-label" style="margin-top: 5px;">Generation Date</div>
+                            <div class="doc-value" id="doc-gen-date">14-05-2024 10:00 AM</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 class="doc-title">TDS Credit Received Summary</h1>
+                        <div class="doc-content" style="font-weight: 600; color: #64748b !important;">Official Financial Statement</div>
+                    </div>
+
+                    <!-- Client Information Section -->
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="doc-section-head" style="font-size: 12px !important; margin-bottom: 10px;">Client Information</div>
+                            <div style="margin-bottom: 8px;">
+                                <div class="doc-label">Customer Name</div>
+                                <div class="doc-value" id="out-cust">---</div>
+                            </div>
+                            <div>
+                                <div class="doc-label">Department / Agency</div>
+                                <div class="doc-value" id="out-dept">---</div>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <div class="doc-section-head" style="font-size: 12px !important; margin-bottom: 10px;">Filing Details</div>
+                            <div style="margin-bottom: 8px;">
+                                <div class="doc-label">Financial Year(s)</div>
+                                <div class="doc-value" id="out-fy-badge">---</div>
+                            </div>
+                            <div>
+                                <div class="doc-label">Prepared By</div>
+                                <div class="doc-value" id="out-prepared-by">Internal System</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Table -->
+                    <div class="doc-section-head">Payment Breakdown</div>
+                    <table class="accounting-table">
+                        <thead>
+                            <tr>
+                                <th width="60">S.No</th>
+                                <th>Month / Period</th>
+                                <th class="amount">TDS Amount Claimed</th>
+                            </tr>
+                        </thead>
+                        <tbody id="out-table-body">
+                            <!-- Results injected here -->
+                        </tbody>
+                    </table>
+
+                    <!-- Financial Summary Box -->
+                    <div class="summary-container">
+                        <div class="summary-box">
+                            <div class="summary-row">
+                                <span>Total TDS Amount Claimed</span>
+                                <span class="val" id="sum-claimed">₹ 0.00</span>
+                            </div>
+                            <div class="summary-row" style="background: #0f172a; color: white !important;">
+                                <span style="font-weight: 800; font-size: 16px;">Rounded Total</span>
+                                <span class="val" id="sum-rounded" style="font-weight: 800; font-size: 16px;">₹ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Section -->
+                    <div class="analytics-section">
+                        <div class="doc-section-head">Payment Insights</div>
+                        <div class="analytics-grid">
+                            <div class="ana-card">
+                                <div class="ana-label">Highest TDS Month</div>
+                                <div class="ana-val" id="ana-highest">---</div>
+                            </div>
+                            <div class="ana-card">
+                                <div class="ana-label">Lowest TDS Month</div>
+                                <div class="ana-val" id="ana-lowest">---</div>
+                            </div>
+                            <div class="ana-card">
+                                <div class="ana-label">Monthly Average</div>
+                                <div class="ana-val" id="ana-avg">₹ 0.00</div>
+                            </div>
+                        </div>
+                        <div class="flex-between" style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                            <div style="font-size: 11px; color: #64748b !important;">
+                                <span style="font-weight: 700;">Records:</span> <span id="ana-months">0</span> | 
+                                <span style="font-weight: 700;">FY Count:</span> <span id="ana-years">0</span>
+                            </div>
+                            <div style="font-size: 11px; font-weight: 800; color: #0f172a !important;" id="entry-count">0 Records</div>
+                        </div>
+                    </div>
+
+                    <!-- Signature Area -->
+                    <div class="signature-area">
+                        <div class="sig-box">
+                            <div class="sig-name" id="sig-prepared-name">---</div>
+                            <div class="sig-line"></div>
+                            <div class="sig-label">Prepared By</div>
+                        </div>
+                        <div class="sig-box">
+                            <div class="sig-name">Internal Auditor</div>
+                            <div class="sig-line"></div>
+                            <div class="sig-label">Checked By</div>
+                        </div>
+                        <div class="sig-box">
+                            <div class="sig-name">Managing Director</div>
+                            <div class="sig-line"></div>
+                            <div class="sig-label">Authorized Signatory</div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Section -->
+                    <div class="doc-footer">
+                        This is a computer-generated financial statement. No physical signature required.<br>
+                        <strong>TenderX Consultancy - Ramban, J&K</strong>
+                    </div>
+                </div>
+
+                <div class="flex-center gap-lg no-print" style="padding-bottom: 80px;">
+                    <button onclick="shareWhatsApp()" class="btn"
+                        style="background: #25D366; color: white; padding: 15px 40px; font-size: 1.1rem; border-radius: 16px;">
+                        <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i> Share on WhatsApp
+                    </button>
+                    <button onclick="exportToPDF()" class="btn primary"
+                        style="padding: 15px 40px; font-size: 1.1rem; border-radius: 16px;">
+                        <i class="fas fa-file-pdf" style="font-size: 1.25rem;"></i> Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification System -->
+    <!-- Premium Toast Notification -->
+    <div id="toast" class="tx-toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toast-msg"></span>
+    </div>
+
+    <script>
+        const months = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+        let rowCount = 0;
+        let isInitialLoad = true;
+        let isSaving = false; // Flag to prevent duplicate submissions
+
+        let currentAdminId = null;
+
+        window.onload = async () => {
+            // Check session
+            if (window.checkSession) {
+                const session = await window.checkSession();
+                if (session) currentAdminId = session.user.id;
+            }
+
+            const dateStr = new Date().toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'long', year: 'numeric'
+            });
+            const timeStr = new Date().toLocaleTimeString('en-IN', {
+                hour: '2-digit', minute: '2-digit'
+            });
+            const genDateEl = document.getElementById('doc-gen-date');
+            if (genDateEl) genDateEl.innerText = `${dateStr} AT ${timeStr}`;
+            loadDraft();
+            isInitialLoad = false;
+            
+            // Fetch past summaries after session check
+            setTimeout(fetchPastSummaries, 500);
+        };
+
+    const fyOptions = ["2021-2022", "2022-2023", "2023-2024", "2024-2025", "2025-2026", "2026-2027", "2027-2028", "2028-2029", "2029-2030"];
+
+    function addRow(monthVal = "", amountVal = "", fyVal = "") {
+        const container = document.getElementById('rows-container');
+        const rowId = `row-${rowCount++}`;
+        const div = document.createElement('div');
+        div.id = rowId;
+        div.className = 'grid-12 mb-sm animate-fade-in';
+        div.style.alignItems = 'center';
+
+        const currentRows = container.querySelectorAll('.month-select').length;
+        const nextMonthIndex = currentRows % 12;
+        const defaultFY = document.getElementById('fin-year').value;
+
+        div.innerHTML = `
+            <div class="col-3">
+                <select class="fy-select input" style="font-size: 0.8rem; font-weight: 600;">
+                    ${fyOptions.map(fy => `<option value="${fy}" ${(fyVal || defaultFY) === fy ? 'selected' : ''}>${fy}</option>`).join('')}
+                </select>
+            </div>
+            <div class="col-2">
+                <select class="month-select input" style="font-weight: 700;">
+                    ${months.map((m, i) => `<option value="${m}" ${monthVal ? (monthVal === m ? 'selected' : '') : (i === nextMonthIndex ? 'selected' : '')}>${m}</option>`).join('')}
+                </select>
+            </div>
+            <div class="col-6">
+                <input type="text" placeholder="Amount (e.g. 5000+2500)" 
+                    class="amount-input input" style="font-weight: 800; color: var(--primary); font-size: 1.1rem;"
+                    oninput="validateInput(this); saveDraft();" value="${amountVal}">
+            </div>
+            <div class="col-1 text-center">
+                <button onclick="deleteRow('${rowId}')" 
+                    class="btn outline" style="padding: 10px; border-radius: 12px; color: var(--accent);">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+        if (!isInitialLoad) saveDraft();
+    }
+
+    function addFullYear() {
+        const selectedFY = document.getElementById('fin-year').value;
+        months.forEach(m => addRow(m, "", selectedFY));
+    }
+
+        function deleteRow(id) {
+            const el = document.getElementById(id);
+            if (document.querySelectorAll('.amount-input').length > 1) {
+                el.remove();
+                saveDraft();
+            } else {
+                showToast("At least one month is required.");
+            }
+        }
+
+    function clearAllRows() {
+        if (confirm("Remove all months?")) {
+            document.getElementById('rows-container').innerHTML = "";
+            rowCount = 0;
+            addRow();
+            saveDraft();
+        }
+    }
+
+    function resetForm() {
+        if (confirm("Clear everything?")) {
+            localStorage.removeItem('tenderx_tds_draft');
+            document.getElementById('cust-name').value = "";
+            document.getElementById('dept-name').value = "";
+            document.getElementById('fin-year').value = "2025-2026";
+            document.getElementById('prepared-by').value = "";
+            clearAllRows();
+            showToast("Form Reset Successful");
+        }
+    }
+
+        function saveDraft() {
+            if (isInitialLoad) return;
+            const data = {
+                custName: document.getElementById('cust-name').value,
+                deptName: document.getElementById('dept-name').value,
+                finYear: document.getElementById('fin-year').value,
+                preparedBy: document.getElementById('prepared-by').value,
+                rows: []
+            };
+            document.querySelectorAll('#rows-container > div').forEach(row => {
+                data.rows.push({
+                    fy: row.querySelector('.fy-select').value,
+                    month: row.querySelector('.month-select').value,
+                    amount: row.querySelector('.amount-input').value
+                });
+            });
+            localStorage.setItem('tenderx_tds_draft', JSON.stringify(data));
+            const status = document.getElementById('save-status');
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 2000);
+        }
+
+        function loadDraft() {
+            const saved = localStorage.getItem('tenderx_tds_draft');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('cust-name').value = data.custName || "";
+                document.getElementById('dept-name').value = data.deptName || "";
+                document.getElementById('fin-year').value = data.finYear || "2025-2026";
+                document.getElementById('prepared-by').value = data.preparedBy || "";
+                if (data.rows && data.rows.length > 0) {
+                    document.getElementById('rows-container').innerHTML = "";
+                    data.rows.forEach(r => addRow(r.month, r.amount, r.fy));
+                } else addRow();
+            } else addRow();
+        }
+
+        function validateInput(input) {
+            input.value = input.value.replace(/[^0-9+,.]/g, '');
+        }
+
+        function parseAmount(str) {
+            if (!str || !str.trim()) return 0;
+            const parts = str.replace(/,/g, '').split('+');
+            let total = 0;
+            parts.forEach(p => {
+                const num = parseFloat(p.trim());
+                if (!isNaN(num)) total += num;
+            });
+            return total;
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency', currency: 'INR', maximumFractionDigits: 2
+            }).format(val);
+        }
+
+        async function generateOutput() {
+            if (isSaving) return; // Block multiple clicks
+
+            const sNo = document.getElementById('s-no').value.trim();
+            const custName = document.getElementById('cust-name').value.trim();
+            const deptName = document.getElementById('dept-name').value.trim();
+            const finYear = document.getElementById('fin-year').value;
+
+            if (!sNo) { showToast("Enter S.No / Reference No."); return; }
+            if (!custName) { showToast("Enter Customer Name."); return; }
+
+            // 1. Gather Data
+            const rows = document.querySelectorAll('#rows-container > div');
+            let grandTotal = 0;
+            const tableRecords = [];
+            const uniqueYears = new Set();
+
+            rows.forEach(row => {
+                const fy = row.querySelector('.fy-select').value;
+                const month = row.querySelector('.month-select').value;
+                const amount = parseAmount(row.querySelector('.amount-input').value.trim());
+                if (amount > 0) {
+                    tableRecords.push({ fy, month, amount });
+                    grandTotal += amount;
+                    uniqueYears.add(fy);
+                }
+            });
+
+            if (tableRecords.length === 0) { showToast("Enter at least one amount."); return; }
+
+            // Sort records by year then month
+            const monthOrder = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+            tableRecords.sort((a, b) => {
+                if (a.fy !== b.fy) return a.fy.localeCompare(b.fy);
+                return monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month);
+            });
+
+            // 3. UI Start saving process
+            isSaving = true;
+            const genBtn = document.getElementById('generate-btn');
+            const originalBtnText = genBtn.innerHTML;
+            genBtn.disabled = true;
+            genBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+
+            try {
+                const tableBody = document.getElementById('out-table-body');
+                tableBody.innerHTML = '';
+                const monthOrder = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+
+                let highest = { month: 'N/A', amount: 0, fy: '' };
+                let lowest = { month: 'N/A', amount: Infinity, fy: '' };
+                let lastYear = "";
+                
+                tableRecords.forEach((rec, idx) => {
+                    if (rec.amount > highest.amount) highest = { month: rec.month, amount: rec.amount, fy: rec.fy };
+                    if (rec.amount < lowest.amount) lowest = { month: rec.month, amount: rec.amount, fy: rec.fy };
+
+                    // Add year grouping header if year changes
+                    if (rec.fy !== lastYear) {
+                        const yearTr = document.createElement('tr');
+                        yearTr.className = 'year-group-row';
+                        yearTr.innerHTML = `<td colspan="4">Financial Year: ${rec.fy}</td>`;
+                        tableBody.appendChild(yearTr);
+                        lastYear = rec.fy;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${String(idx + 1).padStart(2, '0')}</td>
+                        <td style="font-weight: 600;">${rec.month}</td>
+                        <td class="amount">${formatCurrency(rec.amount)}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                if (lowest.amount === Infinity) lowest.amount = 0;
+
+                // Update Header/Meta
+                const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                const genDateEl = document.getElementById('doc-gen-date');
+                if (genDateEl) genDateEl.innerText = `${dateStr} ${timeStr}`;
+                const setElText = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = val;
+                };
+
+                setElText('doc-ref-no', `TX-TDS-${sNo.padStart(3, '0')}`);
+                setElText('out-cust', custName);
+                setElText('out-dept', deptName || "N/A");
+                setElText('out-fy-badge', Array.from(uniqueYears).sort().join(', '));
+                
+                const preparedByName = document.getElementById('prepared-by').value || "Internal System";
+                setElText('out-prepared-by', preparedByName);
+                setElText('sig-prepared-name', preparedByName);
+
+                // Summary Box
+                setElText('sum-claimed', formatCurrency(grandTotal));
+                setElText('sum-rounded', formatCurrency(Math.round(grandTotal)));
+
+                // Analytics
+                setElText('ana-highest', `${highest.month} ${highest.fy} (${formatCurrency(highest.amount)})`);
+                setElText('ana-lowest', `${lowest.month} ${lowest.fy} (${formatCurrency(lowest.amount)})`);
+                setElText('ana-avg', formatCurrency(grandTotal / (tableRecords.length || 1)));
+                setElText('ana-months', tableRecords.length);
+                setElText('ana-years', uniqueYears.size);
+
+                setElText('entry-count', `${tableRecords.length} Records`);
+
+                // --- Save to Database & LocalStorage ---
+                const finalData = {
+                    s_no: sNo,
+                    customer_name: custName,
+                    department_name: deptName || "N/A",
+                    financial_year: Array.from(uniqueYears).sort().join(', '),
+                    prepared_by: preparedByName,
+                    monthly_data: tableRecords,
+                    grand_total: grandTotal,
+                    admin_id: currentAdminId
+                };
+
+                // Save to LocalStorage
+                const localData = { ...finalData, timestamp: new Date().toISOString() };
+                saveToLocalStorageHistory(localData);
+
+                // Save to Supabase (Async)
+                if (window.saveTDSSummary) {
+                    await window.saveTDSSummary(finalData);
+                    showToast(isDuplicateInHistory({ s_no: sNo }) ? "Report Updated Successfully" : "New Report Created Successfully");
+                }
+
+                document.getElementById('input-section').classList.add('hidden');
+                document.getElementById('past-summaries-section').classList.add('hidden');
+                document.getElementById('output-section').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                fetchPastSummaries();
+
+            } catch (err) {
+                console.error("Save Failed:", err);
+                showToast("Saved Locally (Cloud Error)");
+            } finally {
+                // 4. Reset saving state
+                isSaving = false;
+                genBtn.disabled = false;
+                genBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        function isDuplicateInHistory(newData) {
+            const history = JSON.parse(localStorage.getItem('tenderx_tds_history') || '[]');
+            return history.some(item => item.s_no === newData.s_no);
+        }
+
+        function saveToLocalStorageHistory(data) {
+            let history = JSON.parse(localStorage.getItem('tenderx_tds_history') || '[]');
+
+            // Check if record exists with this S.No
+            const existingIndex = history.findIndex(h => h.s_no === data.s_no);
+
+            if (existingIndex > -1) {
+                history[existingIndex] = { ...data, timestamp: new Date().toISOString() };
+            } else {
+                history.unshift({ ...data, timestamp: new Date().toISOString() });
+            }
+
+            if (history.length > 20) history.pop(); // Keep last 20
+            localStorage.setItem('tenderx_tds_history', JSON.stringify(history));
+        }
+
+        let historicalRecords = [];
+
+        async function fetchPastSummaries() {
+            const body = document.getElementById('past-summaries-body');
+            try {
+                let data = [];
+                if (window.fetchTDSSummaries) {
+                    data = await window.fetchTDSSummaries();
+                } else {
+                    data = JSON.parse(localStorage.getItem('tenderx_tds_history') || '[]');
+                }
+
+                historicalRecords = data;
+
+                if (data.length === 0) {
+                    body.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-600">No historical records found.</td></tr>';
+                    return;
+                }
+
+                body.innerHTML = data.map((item, index) => `
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition cursor-pointer" onclick="loadHistoricalRecordByIndex(${index})">
+                        <td class="px-6 py-4 text-primary font-mono font-bold">#${item.s_no}</td>
+                        <td class="px-6 py-4 font-bold text-white">${item.customer_name}</td>
+                        <td class="px-6 py-4 text-slate-300">${item.department_name}</td>
+                        <td class="px-6 py-4 text-right font-black text-indigo-400">${formatCurrency(item.grand_total)}</td>
+                        <td class="px-6 py-4 text-center">
+                            <button class="btn-icon" style="color: var(--accent); background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.3s;" 
+                                onclick="event.stopPropagation(); deleteHistoricalRecordByIndex(${index})" 
+                                title="Delete Summary">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Historical Load Error:", err);
+                body.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-accent">Error loading records. Check connection.</td></tr>';
+            }
+        }
+
+        function loadHistoricalRecordByIndex(index) {
+            const item = historicalRecords[index];
+            if (item) loadHistoricalRecord(item);
+        }
+
+        function deleteHistoricalRecordByIndex(index) {
+            const item = historicalRecords[index];
+            if (item) deleteHistoricalRecord(item.id, item.timestamp, item.s_no);
+        }
+
+        function loadHistoricalRecord(item) {
+            document.getElementById('s-no').value = item.s_no;
+            document.getElementById('cust-name').value = item.customer_name;
+            document.getElementById('dept-name').value = item.department_name === "N/A" ? "" : item.department_name;
+            document.getElementById('fin-year').value = item.financial_year;
+            document.getElementById('prepared-by').value = item.prepared_by || "";
+
+            const container = document.getElementById('rows-container');
+            container.innerHTML = "";
+            rowCount = 0;
+
+            item.monthly_data.forEach(r => {
+                addRow(r.month, r.amount, r.fy);
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast(`Record #${item.s_no} loaded for editing`);
+        }
+
+        let deleteId, deleteTimestamp, deleteSNo;
+
+        function showConfirmModal(id, timestamp, sNo) {
+            deleteId = id;
+            deleteTimestamp = timestamp;
+            deleteSNo = sNo;
+            document.getElementById('confirmOverlay').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmOverlay').classList.remove('active');
+        }
+
+        async function confirmDelete() {
+            closeConfirmModal();
+            try {
+                if (deleteId && deleteId !== 'undefined' && window.deleteTDSSummary) {
+                    await window.deleteTDSSummary(deleteId);
+                }
+
+                // Clear from LocalStorage history too
+                let history = JSON.parse(localStorage.getItem('tenderx_tds_history') || '[]');
+                history = history.filter(h => h.id !== deleteId && h.timestamp !== deleteTimestamp && h.s_no !== deleteSNo);
+                localStorage.setItem('tenderx_tds_history', JSON.stringify(history));
+
+                showToast("Record deleted successfully");
+                fetchPastSummaries();
+            } catch (err) {
+                showToast("Error deleting record");
+            }
+        }
+
+        async function deleteHistoricalRecord(id, timestamp, sNo) {
+            showConfirmModal(id, timestamp, sNo);
+        }
+
+        function editInput() {
+            document.getElementById('input-section').classList.remove('hidden');
+            document.getElementById('output-section').classList.add('hidden');
+        }
+
+        function getSummaryText() {
+            const custName = document.getElementById('cust-name').value;
+            const deptName = document.getElementById('dept-name').value;
+            const finYear = document.getElementById('out-fy-badge').innerText;
+            const grandTotal = document.getElementById('sum-claimed').innerText;
+            let details = "";
+            
+            document.querySelectorAll('#out-table-body tr').forEach(row => {
+                if (row.classList.contains('year-group-row')) {
+                    details += `\n📅 *${row.innerText}*\n`;
+                } else if (row.cells.length >= 2) {
+                    details += `• ${row.cells[1].innerText}: ${row.cells[row.cells.length - 1].innerText}\n`;
+                }
+            });
+            
+            return `*TDS Credit Received - Summary*\n\n🏢 *Customer:* ${custName}\n🏛️ *Dept:* ${deptName || 'N/A'}\n📅 *FY Range:* ${finYear}\n\n*Breakdown:*\n${details}\n💰 *Grand Total: ${grandTotal}*\n\n— Team TenderX Solutions`;
+        }
+
+        function shareWhatsApp() {
+            window.open(`https://wa.me/?text=${encodeURIComponent(getSummaryText())}`, '_blank');
+        }
+
+        function exportToPDF() {
+            const element = document.getElementById('print-area');
+            const custName = document.getElementById('cust-name').value || "TDS_Summary";
+            const sNo = document.getElementById('s-no').value || "000";
+            
+            if (typeof html2pdf === 'undefined') {
+                showToast("Direct download unavailable. Opening print dialog...");
+                window.print();
+                return;
+            }
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `TX_TDS_${sNo}_${custName.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            showToast("Preparing Download...");
+            html2pdf().set(opt).from(element).save().catch(err => {
+                console.error("PDF Error:", err);
+                window.print();
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 3000);
+        }
+
+        function logoutAdmin() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Initialize historical data
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(fetchPastSummaries, 1000);
+        });
+    </script>
+
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-init.js"></script>
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav no-print">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <i class="fas fa-chart-pie"></i>
+            <span>Stats</span>
+        </a>
+        <a href="submissions.html" class="mobile-nav-item">
+            <i class="fas fa-file-invoice"></i>
+            <span>Bids</span>
+        </a>
+        <a href="contractors.html" class="mobile-nav-item">
+            <i class="fas fa-users"></i>
+            <span>Contractors</span>
+        </a>
+        <a href="clients.html" class="mobile-nav-item">
+            <i class="fas fa-user-tie"></i>
+            <span>Clients</span>
+        </a>
+        <a href="documents.html" class="mobile-nav-item">
+            <i class="fas fa-folder-open"></i>
+            <span>Docs</span>
+        </a>
+        <a href="tds-summary.html" class="mobile-nav-item active">
+            <i class="fas fa-calculator"></i>
+            <span>TDS</span>
+        </a>
+        <a href="gst-calculator.html" class="mobile-nav-item">
+            <i class="fas fa-receipt"></i>
+            <span>GST</span>
+        </a>
+    </nav>
+</body>
+
+</html>
